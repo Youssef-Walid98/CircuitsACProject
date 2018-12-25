@@ -13,10 +13,54 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Passive Components">
+      <UniqueIdentifier>{1f13ef4e-69b4-4e29-ab8a-895a262a9490}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Active Components">
+      <UniqueIdentifier>{c23ecab6-0ec3-4367-a8d1-e97599773b1d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source.cpp">
+    <ClCompile Include="Component.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Resistor.cpp">
+      <Filter>Passive Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Inductor.cpp">
+      <Filter>Passive Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Capacitor.cpp">
+      <Filter>Passive Components</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VoltageSource.cpp">
+      <Filter>Active Components</Filter>
+    </ClCompile>
+    <ClCompile Include="CurrentSource.cpp">
+      <Filter>Active Components</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Component.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resistor.h">
+      <Filter>Passive Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Inductor.h">
+      <Filter>Passive Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Capacitor.h">
+      <Filter>Passive Components</Filter>
+    </ClInclude>
+    <ClInclude Include="VoltageSource.h">
+      <Filter>Active Components</Filter>
+    </ClInclude>
+    <ClInclude Include="CurrentSource.h">
+      <Filter>Active Components</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -142,7 +142,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source.cpp" />
+    <ClCompile Include="Capacitor.cpp" />
+    <ClCompile Include="Component.cpp" />
+    <ClCompile Include="CurrentSource.cpp" />
+    <ClCompile Include="Inductor.cpp" />
+    <ClCompile Include="Resistor.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="VoltageSource.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Capacitor.h" />
+    <ClInclude Include="Component.h" />
+    <ClInclude Include="CurrentSource.h" />
+    <ClInclude Include="Inductor.h" />
+    <ClInclude Include="Resistor.h" />
+    <ClInclude Include="VoltageSource.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
