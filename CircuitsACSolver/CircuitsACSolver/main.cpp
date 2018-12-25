@@ -18,6 +18,7 @@ void getNetlist();
 void constructNodeList();
 void fillNoSource(cx_dmat &iMat, cx_dmat &sMat);
 void fillGroundedSource(cx_dmat &iMat, cx_dmat &sMat);
+void fillUngroundedSource(cx_dmat &iMat, cx_dmat& sMat);
 int noNodes=0;
 vector<Component*> componentsList;
 vector< vector<Component*> > nodeList(100);
@@ -32,12 +33,12 @@ int main()
 
 	fillNoSource(iMat,sMat);
 	fillGroundedSource(iMat, sMat);
-
+	fillUngroundedSource(iMat, sMat);
 	//iMat.print();
 	//sMat.print();
 	
-	cx_dmat ansMat = solve(sMat, iMat);
-	ansMat.print();
+	cx_dmat nodeVoltageMat = solve(sMat, iMat);
+	//nodeVoltageMat.print();
 	system("pause");
 }
 
@@ -148,6 +149,55 @@ void fillGroundedSource(cx_dmat & iMat, cx_dmat & sMat)
 				{
 					sMat(i-1, i-1) += complex<double>(1, 0);
 					iMat(i-1, 0) += nodeList[i][j]->getVal();
+				}
+			}
+		}
+	}
+}
+
+void fillUngroundedSource(cx_dmat& iMat, cx_dmat& sMat)
+{
+	for (int i = 1; i < noNodes; i++) {
+		if (nodeType[i] == 2)
+		{
+			for (int j = 0; j < nodeList[i].size(); j++) {
+				if (dynamic_cast<VoltageSource*>(nodeList[i][j]) != NULL)
+				{
+					int PosNode = nodeList[i][j]->getpNode();
+					int NegNode = nodeList[i][j]->getnNode();
+					sMat(max(PosNode, NegNode) - 1, PosNode - 1) += complex<double>(1, 0);
+					sMat(max(PosNode, NegNode) - 1, NegNode - 1) -= complex<double>(1, 0);
+					iMat(max(PosNode, NegNode) - 1, 0) += nodeList[i][j]->getVal();
+
+					int row = min(PosNode, NegNode);
+
+					for (int k = 0; k < nodeList[i].size(); k++) {
+						if (dynamic_cast<VoltageSource*>(nodeList[i][j]) == NULL)
+						{
+							int ppNode = nodeList[i][j]->getpNode(); int nnNode = nodeList[i][j]->getnNode();
+							if (ppNode == PosNode && nnNode == NegNode || ppNode == NegNode && nnNode == PosNode) 
+								continue;
+							
+							if (ppNode == PosNode) {
+								sMat(row - 1, nnNode - 1) -= nodeList[i][k]->getInvR();
+								sMat(row - 1, PosNode - 1) += nodeList[i][k]->getInvR();
+							}
+							else if (nnNode == PosNode) {
+								sMat(row - 1, ppNode - 1) -= nodeList[i][k]->getInvR();
+								sMat(row - 1, PosNode - 1) += nodeList[i][k]->getInvR();
+							}
+
+							if (ppNode == NegNode) {
+								sMat(row - 1, nnNode - 1) -= nodeList[i][k]->getInvR();
+								sMat(row - 1, NegNode - 1) += nodeList[i][k]->getInvR();
+							}
+							else if (nnNode == NegNode) {
+								sMat(row - 1, ppNode - 1) -= nodeList[i][k]->getInvR();
+								sMat(row - 1, NegNode - 1) += nodeList[i][k]->getInvR();
+							}
+						}
+					}
+
 				}
 			}
 		}
