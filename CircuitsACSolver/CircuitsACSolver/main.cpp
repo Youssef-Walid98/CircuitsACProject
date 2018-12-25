@@ -13,19 +13,26 @@ using namespace std;
 using namespace arma;
 
 double w = 1;
+double pi = 3.14159265359;
 
 void getNetlist();
 void constructNodeList();
 void fillNoSource(cx_dmat &iMat, cx_dmat &sMat);
 void fillGroundedSource(cx_dmat &iMat, cx_dmat &sMat);
-void fillUngroundedSource(cx_dmat &iMat, cx_dmat& sMat);
+void fillUngroundedSource(cx_dmat &iMat, cx_dmat &sMat);
+void constructCurrentsList(cx_dmat &iMat, cx_dmat &sMat, cx_dmat &voltMat);
+
 int noNodes=0;
 vector<Component*> componentsList;
 vector< vector<Component*> > nodeList(100);
 int nodeType[100]; //// 0 -> no source //// 1 -> grounded source //// 2-> flying source
+complex<double> branchCurrents[100][100];
 
 int main() 
 {
+	for (int i = 0; i < 100; i++)
+		for (int j = 0; j < 100; j++)
+			branchCurrents[i][j] = complex<double>(-1, 0);
 	getNetlist();
 	constructNodeList();
 	cx_dmat sMat (noNodes-1, noNodes-1, fill::zeros);
@@ -38,6 +45,21 @@ int main()
 	//sMat.print();
 	
 	cx_dmat nodeVoltageMat = solve(sMat, iMat);
+
+	constructCurrentsList(iMat, sMat, nodeVoltageMat);
+
+	for (int i = 1; i < noNodes; i++)
+		cout << "V(" << i << ") = " << abs(nodeVoltageMat(i - 1, 0)) << "<" << 180*arg(nodeVoltageMat(i - 1, 0))/pi << endl;
+
+
+	for (int i = 0; i<100; i++)
+		for (int j = 0; j < 100; j++)
+		{
+			if (branchCurrents[i][j] != complex<double>(-1, 0)) {
+				cout << "I(" << i << "," << j << ") = " << branchCurrents[i][j] << endl;
+			}
+		}
+
 	//nodeVoltageMat.print();
 	system("pause");
 }
@@ -200,6 +222,76 @@ void fillUngroundedSource(cx_dmat& iMat, cx_dmat& sMat)
 
 				}
 			}
+		}
+	}
+}
+
+void constructCurrentsList(cx_dmat& iMat, cx_dmat& sMat, cx_dmat& voltMat)
+{
+	for (int i = 1; i < noNodes; i++) {
+		for (int j = 0; j < nodeList[i].size(); j++) {
+			if (dynamic_cast<VoltageSource*>(nodeList[i][j]) == NULL) {
+				if (dynamic_cast<CurrentSource*>(nodeList[i][j]) != NULL) {
+					branchCurrents[nodeList[i][j]->getpNode()][nodeList[i][j]->getnNode()] = nodeList[i][j]->getVal(); //sets the value to the bigger node
+				}
+				else {
+					int PosNode = nodeList[i][j]->getpNode(); int NegNode = nodeList[i][j]->getnNode();
+					complex<double> smallervolt;
+					complex<double> biggervolt;
+					if (PosNode == 0)
+					{
+						biggervolt = voltMat(NegNode - 1, 0);
+						smallervolt = 0;
+					}
+					else if (NegNode == 0)
+					{
+						smallervolt = 0;
+						biggervolt = voltMat(PosNode - 1, 0);
+					}
+					else if (abs(voltMat(PosNode - 1, 0)) > abs(voltMat(NegNode - 1, 0)))
+					{
+						biggervolt = voltMat(PosNode - 1, 0);
+						smallervolt = voltMat(NegNode - 1, 0);
+					}
+					else {
+						biggervolt = voltMat(NegNode - 1, 0);
+						smallervolt = voltMat(PosNode - 1, 0);
+					}
+
+					complex<double> dV = biggervolt - smallervolt;
+					if (PosNode != 0 && NegNode != 0) {
+						if (abs(voltMat(PosNode - 1, 0)) > abs(voltMat(NegNode - 1, 0)))
+						{
+							branchCurrents[PosNode][NegNode] = (dV / (nodeList[i][j]->getR()));
+						}
+						else {
+							branchCurrents[NegNode][PosNode] = (dV / (nodeList[i][j]->getR()));
+						}
+					}
+					else {
+						if (PosNode == 0)
+						{
+							branchCurrents[NegNode][PosNode] = (dV / nodeList[i][j]->getR());
+						}else
+							branchCurrents[PosNode][NegNode] = (dV / nodeList[i][j]->getR());
+					}
+				}
+			}
+		}
+	}
+
+	for (int i = 1; i < noNodes; i++)
+	{
+		if (nodeType[i] == 1)
+		{
+			complex<double> sum(0, 0);
+			for (int j = 0; j < 100; j++)
+				if(branchCurrents[i][j] != complex<double>(-1,0) )
+					sum += branchCurrents[i][j];
+			for (int j = 0; j < 100; j++)
+				if (branchCurrents[j][i] != complex<double>(-1, 0))
+					sum -= branchCurrents[j][i];
+			branchCurrents[i][0] = sum;
 		}
 	}
 }
