@@ -12,7 +12,7 @@
 using namespace std;
 using namespace arma;
 
-double w = 1000;
+double w = 1;
 
 void getNetlist();
 void constructNodeList();
@@ -33,11 +33,11 @@ int main()
 	fillNoSource(iMat,sMat);
 	fillGroundedSource(iMat, sMat);
 
-	iMat.print();
-	sMat.print();
+	//iMat.print();
+	//sMat.print();
 	
 	cx_dmat ansMat = solve(sMat, iMat);
-
+	ansMat.print();
 	system("pause");
 }
 
